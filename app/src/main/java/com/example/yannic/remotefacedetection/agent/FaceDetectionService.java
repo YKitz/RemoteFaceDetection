@@ -3,6 +3,7 @@ package com.example.yannic.remotefacedetection.agent;
 import java.util.List;
 
 import jadex.commons.future.IFuture;
+import jadex.commons.future.ITuple2Future;
 
 /**
  * Created by Yannic on 23.02.2017.
@@ -14,6 +15,6 @@ public interface FaceDetectionService {
         String test();
 
 
-        IFuture<List<Integer>> getFrame(int height, int width, byte[] data);
+        ITuple2Future<List<Integer>, byte[]> getFrame(int id, byte[] data);
 
 }

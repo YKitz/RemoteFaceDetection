@@ -102,15 +102,19 @@ import static android.R.attr.data;
 
 
         int frameCounter= 0;
+        int frameID = 0;
 
     @Override
     public void onPreviewFrame(byte[] bytes, Camera camera) {
-        Log.d("PreviewFrame", "onPreviewFrame " + frameCounter);
 
 
-        if(myService != null && myService.agentRunning() && frameCounter >= 50) {
 
 
+
+
+        if(myService != null && myService.agentRunning() && frameCounter >= 35) {
+
+            Log.d("RemoteAgent", "id: " + frameID);
                 Camera.Parameters parameters = camera.getParameters();
                 Camera.Size size = parameters.getPreviewSize();
                 YuvImage image = new YuvImage(bytes, parameters.getPreviewFormat(),
@@ -122,15 +126,16 @@ import static android.R.attr.data;
                 */
                 ByteArrayOutputStream baos=new ByteArrayOutputStream();
                 image.compressToJpeg(
-                        new Rect(0, 0, image.getWidth(), image.getHeight()), 5,
+                        new Rect(0, 0, image.getWidth(), image.getHeight()), 20,
                         baos);
                 byte[] b = baos.toByteArray();
                 Log.d("PreviewFrameSend", "bytes: " + b.length +"width: " + image.getWidth() + "heigth: "+ image.getHeight());
-                myService.detectFaces(image.getHeight(), image.getWidth(), b);
+                myService.detectFaces(frameID, b);
 
             frameCounter = 0;
         }
   frameCounter++;
+        frameID++;
 
 
 

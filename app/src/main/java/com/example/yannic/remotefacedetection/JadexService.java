@@ -22,8 +22,10 @@ import jadex.base.RootComponentConfiguration;
 import jadex.bridge.IComponentIdentifier;
 import jadex.bridge.IExternalAccess;
 import jadex.commons.future.DefaultResultListener;
+import jadex.commons.future.DefaultTuple2ResultListener;
 import jadex.commons.future.Future;
 import jadex.commons.future.IFuture;
+import jadex.commons.future.ITuple2Future;
 
 
 /**
@@ -32,23 +34,27 @@ import jadex.commons.future.IFuture;
 
 public class JadexService extends JadexPlatformService {
 
-    public interface MyPlatformListener
-    {
+    public interface MyPlatformListener {
         void onPlatformStarting();
+
         void onPlatformStarted();
 
     }
 
-    public class MyServiceInterface extends Binder
-    {
+    public class MyServiceInterface extends Binder {
 
-        public boolean agentRunning(){ return JadexService.this.running ;}
-
-        public void startFaceDetection()    { JadexService.this.startFaceDetection(); }
-
-        public void detectFaces(int height, int width, byte[] data)    {JadexService.this.detectFaces( height,width, data);    }
+        public boolean agentRunning() {
+            return JadexService.this.running;
         }
 
+        public void startFaceDetection() {
+            JadexService.this.startFaceDetection();
+        }
+
+        public void detectFaces(int id, byte[] data) {
+            JadexService.this.detectFaces(id, data);
+        }
+    }
 
 
     public MyPlatformListener listener;
@@ -58,8 +64,8 @@ public class JadexService extends JadexPlatformService {
     private Handler handler;
 
     private boolean running;
-    public JadexService()
-    {
+
+    public JadexService() {
         super();
         setPlatformAutostart(false);
         PlatformConfiguration config = getPlatformConfiguration();
@@ -70,32 +76,25 @@ public class JadexService extends JadexPlatformService {
         rootConfig.setNetworkPass("testpw");
 
 
-
-
     }
 
     @Override
-    public void onCreate()
-    {
+    public void onCreate() {
         super.onCreate();
         running = false;
         //Händler für die kommunikation mit dem UI Thread
         this.handler = new Handler();
 
-        Log.d("Service","Service running");
+        Log.d("Service", "Service running");
 
-        registerEventReceiver(new EventReceiver<MyEvent>(MyEvent.class)
-        {
+        registerEventReceiver(new EventReceiver<MyEvent>(MyEvent.class) {
 
-            public void receiveEvent(final MyEvent event)
-            {
+            public void receiveEvent(final MyEvent event) {
 
-                running=true;
-                handler.post(new Runnable()
-                {
+                running = true;
+                handler.post(new Runnable() {
 
-                    public void run()
-                    {
+                    public void run() {
                         Toast.makeText(JadexService.this, event.getMessage(), Toast.LENGTH_LONG).show();
                     }
                 });
@@ -105,32 +104,27 @@ public class JadexService extends JadexPlatformService {
 
 
     @Override
-    public IBinder onBind(Intent intent)
-    {
+    public IBinder onBind(Intent intent) {
         return new MyServiceInterface();
     }
 
     @Override
-    protected void onPlatformStarting()
-    {
+    protected void onPlatformStarting() {
         super.onPlatformStarting();
-        if (listener != null)
-        {
+        if (listener != null) {
             listener.onPlatformStarting();
         }
     }
 
     @Override
-    protected void onPlatformStarted(IExternalAccess platform)
-    {
+    protected void onPlatformStarted(IExternalAccess platform) {
         super.onPlatformStarted(platform);
-        if (listener != null)
-        {
+        if (listener != null) {
             listener.onPlatformStarted();
         }
 
 
-       // startSendAgent();
+        // startSendAgent();
         //startComponent("LocalFaceDetectionAgent", FaceDetectionAgent.class);
         startComponent("RemoteFaceDetectionAgent", RemoteFaceDetectionAgent.class).addResultListener(new DefaultResultListener<IComponentIdentifier>() {
             @Override
@@ -142,34 +136,43 @@ public class JadexService extends JadexPlatformService {
 
     }
 
-    public void startFaceDetection(){
+    public void startFaceDetection() {
         startPlatform();
     }
 
 
-    public void detectFaces(int height, int width, byte[] data){
+    public void detectFaces(int id, byte[] data) {
 
 
+        ITuple2Future<List<Integer>, byte[]> fut = agent.getFaceArray(id, data);
 
-         IFuture<List<Integer>> fut = agent.getFaceArray(height, width, data);
+        fut.addResultListener(new DefaultTuple2ResultListener<List<Integer>, byte[]>() {
+            @Override
+            public void exceptionOccurred(Exception exception) {
 
-        fut.addResultListener(new DefaultResultListener<List<Integer>>() {
-            public void resultAvailable(List<Integer> result) {
+            }
 
-
-                    Intent toIntent = new Intent("faceDetected");
-                    toIntent.putIntegerArrayListExtra("Data", (ArrayList<Integer>) result);
-                    LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(toIntent);
-
+            @Override
+            public void firstResultAvailable(List<Integer> result) {
+                Intent toIntent = new Intent("faceDetected");
+                toIntent.putIntegerArrayListExtra("Data", (ArrayList<Integer>) result);
+                LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(toIntent);
 
 
                 Log.d("JadexService", "broadcasting Rect: " + result.toString());
             }
+
+            @Override
+            public void secondResultAvailable(byte[] result) {
+
+            }
+
+
         });
-       }
 
 
     }
+}
 
 
 

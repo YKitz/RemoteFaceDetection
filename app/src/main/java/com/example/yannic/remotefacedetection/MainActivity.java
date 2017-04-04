@@ -127,6 +127,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                 /*
                 for(int counter = 0; counter < data.size(); counter+=4){
 
+
                     _box = new Box(getApplicationContext(), (int) (data.get(counter)*1.34), (int) (data.get(counter+1)*1.34),data.get(counter+2), data.get(counter+3));
                     addContentView(_box, layoutParams);
 
@@ -134,7 +135,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                 */
 
 
-                Toast.makeText(getApplicationContext(),""+data.toString(), Toast.LENGTH_SHORT).show();
+               // Toast.makeText(getApplicationContext(),""+data.toString(), Toast.LENGTH_SHORT).show();
             }
         };
         LocalBroadcastManager.getInstance(this).registerReceiver(jadexServiceReceiver,new IntentFilter("faceDetected"));

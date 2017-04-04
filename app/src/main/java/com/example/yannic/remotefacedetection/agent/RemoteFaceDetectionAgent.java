@@ -13,9 +13,11 @@ import jadex.bridge.service.RequiredServiceInfo;
 import jadex.bridge.service.annotation.Service;
 import jadex.bridge.service.component.IRequiredServicesFeature;
 import jadex.bridge.service.types.context.IContextService;
-import jadex.commons.future.DefaultResultListener;
+import jadex.commons.future.DefaultTuple2ResultListener;
 import jadex.commons.future.Future;
 import jadex.commons.future.IFuture;
+import jadex.commons.future.ITuple2Future;
+import jadex.commons.future.Tuple2Future;
 import jadex.kernelbase.ExternalAccess;
 import jadex.micro.annotation.Agent;
 import jadex.micro.annotation.AgentBody;
@@ -76,7 +78,7 @@ public class RemoteFaceDetectionAgent implements IAgentInterface{
 
 
     @Override
-    public IFuture<List<Integer>> getFaceArray(int height, int width, byte[] data){
+    public ITuple2Future<List<Integer>, byte[]> getFaceArray(int id, byte[] data){
 
         if(fds != null) {
 
@@ -87,23 +89,33 @@ public class RemoteFaceDetectionAgent implements IAgentInterface{
 
             */
 
-            Log.d("RemoteAgent", "länge: " + data.length);
 
-            IFuture<List<Integer>> fut = fds.getFrame(height, width, data);
-            fut.addResultListener(new DefaultResultListener<List<Integer>>() {
-                public void resultAvailable(List<Integer> result) {
-                    Log.d("RemoteAgent", "Result ist da: " + result.toString());
+
+            ITuple2Future<List<Integer>, byte[]> fut = fds.getFrame(id, data);
+            fut.addResultListener(new DefaultTuple2ResultListener<List<Integer>, byte[]>() {
+                @Override
+                public void exceptionOccurred(Exception exception) {
+
+                }
+
+                @Override
+                public void firstResultAvailable(List<Integer> result) {
+                    Log.d("RemoteAgent", "Result1 ist da: " + result.toString());
+                }
+
+                @Override
+                public void secondResultAvailable(byte[] result) {
+                    Log.d("RemoteAgent", "Result2 ist da: " + result.length);
                 }
             });
-            String str = fds.test();
-            Log.d("RemoteAgent", str);
-           // Log.d("RemoteAgent", fut.get());
+
             return fut;
         }else{
             Log.d("RemoteAgent", "fds null");
+            return new Tuple2Future<List<Integer>, byte[]>(new ArrayList<Integer>(), new byte[0]);
         }
 
-        return new Future<List<Integer>>(new ArrayList<Integer>());
+
 
     }
 
