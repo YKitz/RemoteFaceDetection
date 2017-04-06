@@ -131,11 +131,12 @@ import static android.R.attr.data;
                 byte[] b = baos.toByteArray();
                 Log.d("PreviewFrameSend", "bytes: " + b.length +"width: " + image.getWidth() + "heigth: "+ image.getHeight());
                 myService.detectFaces(frameID, b);
+                frameID++;
 
             frameCounter = 0;
         }
   frameCounter++;
-        frameID++;
+
 
 
 

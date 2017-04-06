@@ -25,18 +25,19 @@ public class Box extends View {
     Box(Context context, List<Integer> faces) {
         super(context);
         draw = false;
-        x = new int[faces.size()];
-        y = new int[faces.size()];
-        width = new int[faces.size()];
-        height = new int[faces.size()];
+        int faceCount = (faces.size()-1)/4;
+        x = new int[faceCount];
+        y = new int[faceCount];
+        width = new int[faceCount];
+        height = new int[faceCount];
 
-        if(faces.size()>0){
+        if(faces.size()>1){
             draw=true;
         }
 
 
         int i = 0;
-        for(int counter = 0; counter < faces.size(); counter+=4){
+        for(int counter = 1; counter < faces.size(); counter+=4){
 
             x[i] = (int) (faces.get(counter)*1.34);
             y[i]  = (int) (faces.get(counter+1)*1.34);
@@ -59,6 +60,7 @@ public class Box extends View {
 
         //_canvas = canvas;
         canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+
         paint.setStyle(Paint.Style.STROKE);
         paint.setColor(Color.GREEN);
         paint.setStrokeWidth(10);
@@ -66,7 +68,7 @@ public class Box extends View {
         //center
 
         //draw guide box
-        Log.d("Box", "draw");
+
         if(draw) {
             for(int c = 0; c < x.length; c++) {
                 canvas.drawRect(x[c], y[c], x[c] + width[c], y[c] + height[c], paint);

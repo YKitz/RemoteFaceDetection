@@ -1,5 +1,7 @@
 package com.example.yannic.remotefacedetection.agent;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.util.Log;
 
 
@@ -106,6 +108,7 @@ public class RemoteFaceDetectionAgent implements IAgentInterface{
                 @Override
                 public void secondResultAvailable(byte[] result) {
                     Log.d("RemoteAgent", "Result2 ist da: " + result.length);
+
                 }
             });
 

@@ -10,12 +10,8 @@
         android:orientation="horizontal"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
+        android:id="@+id/myLayout"
         >
-
-        <SurfaceView
-            android:id="@+id/TransparentView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
 
         <FrameLayout
             android:id="@+id/camera_preview"
@@ -23,6 +19,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             />
+
 
         <Button
             android:id="@+id/button_capture"
@@ -32,6 +29,7 @@
             android:layout_gravity="center"
             android:onClick="startFaceDetection"
             />
+
     </RelativeLayout>
 
 </android.support.constraint.ConstraintLayout>

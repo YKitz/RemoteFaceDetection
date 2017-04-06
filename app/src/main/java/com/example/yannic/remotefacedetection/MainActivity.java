@@ -6,9 +6,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
+import android.graphics.drawable.Drawable;
 import android.hardware.Camera;
 import android.os.Environment;
 import android.os.IBinder;
@@ -24,6 +27,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
@@ -42,6 +46,8 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     private Intent serviceIntent;
     public JadexService.MyServiceInterface myService;
     RelativeLayout.LayoutParams layoutParams;
+    ImageView similarFace;
+    RelativeLayout layout;
 
 
 
@@ -52,10 +58,20 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         cam = getCameraInstance();
+        layout = (RelativeLayout)findViewById(R.id.myLayout);
+        layoutParams = new RelativeLayout.LayoutParams(300,300);
+        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
 
-        layoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.FILL_PARENT, RelativeLayout.LayoutParams.FILL_PARENT);
         //_box = new Box(getApplicationContext(), 2550, 1430, 200, 200);
         //addContentView(_box, layoutParams);
+        //similarFace = (ImageView) findViewById(R.id.imageView);
+
+        similarFace = new ImageView(this);
+        similarFace.setLayoutParams(layoutParams);
+       // similarFace.setX(2200);
+       // similarFace.setY(950);
+
 
 
 
@@ -109,17 +125,32 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
-        Log.d("MAIN", "serviceConnected");
+
         this.myService = (JadexService.MyServiceInterface) service;
         preview.setService(myService);
         BroadcastReceiver jadexServiceReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                ArrayList<Integer> data = intent.getIntegerArrayListExtra("Data");
+                String action = intent.getAction();
+
+                if(action.equals("faceDetected")) {
+                    ArrayList<Integer> data = intent.getIntegerArrayListExtra("Data");
 
 
-                _box = new Box(getApplicationContext(), data);
-                addContentView(_box, layoutParams);
+                    _box = new Box(getApplicationContext(), data);
+
+                    layout.addView(_box);
+                    //addContentView(_box, layoutParams);
+
+                } else if (action.equals("faceRecognized")) {
+
+                    byte[] imgData = intent.getByteArrayExtra("img");
+                    Bitmap bmp = BitmapFactory.decodeByteArray(imgData, 0, imgData.length);
+                    layout.removeView(similarFace);
+                    similarFace.setImageBitmap(bmp);
+
+                    layout.addView(similarFace);
+                }
                 //preview.setFacesList(data);
                //_box.clearCanvas();
 
@@ -139,6 +170,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             }
         };
         LocalBroadcastManager.getInstance(this).registerReceiver(jadexServiceReceiver,new IntentFilter("faceDetected"));
+        LocalBroadcastManager.getInstance(this).registerReceiver(jadexServiceReceiver,new IntentFilter("faceRecognized"));
     }
 
     @Override

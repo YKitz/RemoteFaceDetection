@@ -154,17 +154,23 @@ public class JadexService extends JadexPlatformService {
 
             @Override
             public void firstResultAvailable(List<Integer> result) {
-                Intent toIntent = new Intent("faceDetected");
-                toIntent.putIntegerArrayListExtra("Data", (ArrayList<Integer>) result);
-                LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(toIntent);
 
+                    Intent toIntent = new Intent("faceDetected");
+                    toIntent.putIntegerArrayListExtra("Data", (ArrayList<Integer>) result);
+                    LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(toIntent);
 
-                Log.d("JadexService", "broadcasting Rect: " + result.toString());
+                    Log.d("JadexService", "broadcasting Rect: " + result.toString());
+
             }
 
             @Override
             public void secondResultAvailable(byte[] result) {
+                if(result.length>0) {
+                    Intent intent = new Intent("faceRecognized");
+                    intent.putExtra("img", result);
 
+                    LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
+                }
             }
 
 
