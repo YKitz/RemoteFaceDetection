@@ -12,8 +12,12 @@ import android.widget.Toast;
 import com.example.yannic.remotefacedetection.agent.IAgentInterface;
 import com.example.yannic.remotefacedetection.agent.RemoteFaceDetectionAgent;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import jadex.android.EventReceiver;
 import jadex.android.service.JadexPlatformService;
@@ -54,6 +58,8 @@ public class JadexService extends JadexPlatformService {
         public void detectFaces(int id, byte[] data) {
             JadexService.this.detectFaces(id, data);
         }
+
+        public int getThreshold(){ return JadexService.this.getThreshold(); }
     }
 
 
@@ -64,6 +70,12 @@ public class JadexService extends JadexPlatformService {
     private Handler handler;
 
     private boolean running;
+
+    private int sendThreshold;
+
+   // private Map<Integer , Long> ids;
+
+    private List<Integer> ids;
 
     public JadexService() {
         super();
@@ -84,6 +96,11 @@ public class JadexService extends JadexPlatformService {
         running = false;
         //Händler für die kommunikation mit dem UI Thread
         this.handler = new Handler();
+
+        sendThreshold = 30;
+
+        //ids = new HashMap<Integer, Long>();
+        ids = new LinkedList<Integer>();
 
         Log.d("Service", "Service running");
 
@@ -140,9 +157,26 @@ public class JadexService extends JadexPlatformService {
         startPlatform();
     }
 
+    public int getThreshold(){return sendThreshold;}
+
+
 
     public void detectFaces(int id, byte[] data) {
 
+        if(ids.size() > 0){
+            sendThreshold += ids.size()*10;
+            Log.d("Remote", "Threshold: " + sendThreshold);
+        }
+        else{
+            sendThreshold = sendThreshold/2;
+            Log.d("Remote", "Threshold: " + sendThreshold);
+        }
+
+        ids.add(id);
+
+        //ids.put(id, System.currentTimeMillis());
+
+        Log.d("JadexService", "Map größe: "+ ids.size());
 
         ITuple2Future<List<Integer>, byte[]> fut = agent.getFaceArray(id, data);
 
@@ -159,7 +193,24 @@ public class JadexService extends JadexPlatformService {
                     toIntent.putIntegerArrayListExtra("Data", (ArrayList<Integer>) result);
                     LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(toIntent);
 
-                    Log.d("JadexService", "broadcasting Rect: " + result.toString());
+                    if (ids.contains(result.get(0))){
+                        ids.remove(result.get(0));
+                    }
+
+                  /*  if(ids.containsKey(result.get(0))){
+
+                        if((System.currentTimeMillis() - ids.get(result.get(0)) ) > 1500){
+                            sendThreshold = sendThreshold +10;
+                            Log.d("Remote", "Threshold: " + sendThreshold);
+                        }
+                        else{
+                            sendThreshold = sendThreshold/2;
+                            Log.d("Remote", "Threshold: " + sendThreshold);
+                        }
+                        ids.remove(result.get(0));
+                    }
+                */
+                    //Log.d("JadexService", "broadcasting Rect: " + result.toString());
 
             }
 

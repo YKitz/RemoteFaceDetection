@@ -75,7 +75,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
 
 
-
         preview = new CameraPreview(this, cam);
 
 
@@ -126,6 +125,10 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
 
+        _box = new Box(getApplicationContext());
+
+        layout.addView(_box);
+
         this.myService = (JadexService.MyServiceInterface) service;
         preview.setService(myService);
         BroadcastReceiver jadexServiceReceiver = new BroadcastReceiver() {
@@ -136,11 +139,13 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                 if(action.equals("faceDetected")) {
                     ArrayList<Integer> data = intent.getIntegerArrayListExtra("Data");
 
+                    layout.removeView(_box);
 
-                    _box = new Box(getApplicationContext(), data);
+                   _box = new Box(getApplicationContext(), data);
+                    //_box.drawRects(data);
 
                     layout.addView(_box);
-                    //addContentView(_box, layoutParams);
+                  //  addContentView(_box, layoutParams);
 
                 } else if (action.equals("faceRecognized")) {
 

@@ -82,6 +82,8 @@ public class RemoteFaceDetectionAgent implements IAgentInterface{
     @Override
     public ITuple2Future<List<Integer>, byte[]> getFaceArray(int id, byte[] data){
 
+
+        //Log.d("Remote", "Bytes: "+ data.length);
         if(fds != null) {
 
             /*

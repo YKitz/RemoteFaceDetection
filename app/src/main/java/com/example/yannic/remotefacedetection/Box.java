@@ -15,16 +15,21 @@ import java.util.List;
  */
 public class Box extends View {
     private Paint paint = new Paint();
-    private boolean draw;
-   // public Canvas _canvas;
+    private boolean _draw;
+    public Canvas _canvas;
 
     int[] x;
     int[] y;
     int[] width;
     int[] height;
+
+    Box(Context context){
+        super(context);
+
+    }
     Box(Context context, List<Integer> faces) {
         super(context);
-        draw = false;
+        _draw = false;
         int faceCount = (faces.size()-1)/4;
         x = new int[faceCount];
         y = new int[faceCount];
@@ -32,7 +37,7 @@ public class Box extends View {
         height = new int[faceCount];
 
         if(faces.size()>1){
-            draw=true;
+            _draw=true;
         }
 
 
@@ -49,7 +54,27 @@ public class Box extends View {
 
     }
 
+    public void drawRects(List<Integer> faces) {
+        int faceCount = (faces.size() - 1) / 4;
+        x = new int[faceCount];
+        y = new int[faceCount];
+        width = new int[faceCount];
+        height = new int[faceCount];
 
+        draw(_canvas);
+/*
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setColor(Color.GREEN);
+        paint.setStrokeWidth(10);
+
+        if (faceCount > 0) {
+            for (int c = 0; c < x.length; c++) {
+                _canvas.drawRect(x[c], y[c], x[c] + width[c], y[c] + height[c], paint);
+            }
+
+        }
+*/
+    }
     public void clearCanvas(){
      //   _canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
     }
@@ -58,7 +83,7 @@ public class Box extends View {
     protected void onDraw(Canvas canvas) { // Override the onDraw() Method
         super.onDraw(canvas);
 
-        //_canvas = canvas;
+       // _canvas = canvas;
         canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
 
         paint.setStyle(Paint.Style.STROKE);
@@ -69,7 +94,7 @@ public class Box extends View {
 
         //draw guide box
 
-        if(draw) {
+        if(_draw) {
             for(int c = 0; c < x.length; c++) {
                 canvas.drawRect(x[c], y[c], x[c] + width[c], y[c] + height[c], paint);
             }

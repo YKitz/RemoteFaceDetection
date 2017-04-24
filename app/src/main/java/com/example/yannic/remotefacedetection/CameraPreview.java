@@ -1,6 +1,8 @@
 package com.example.yannic.remotefacedetection;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
@@ -11,6 +13,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.widget.Toast;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.File;
@@ -34,6 +37,7 @@ import static android.R.attr.data;
         private Camera mCamera;
         private JadexService.MyServiceInterface myService;
         private List _faces;
+
 
 
         public CameraPreview(Context context, Camera camera) {
@@ -112,13 +116,14 @@ import static android.R.attr.data;
 
 
 
-        if(myService != null && myService.agentRunning() && frameCounter >= 35) {
+        if(myService != null && myService.agentRunning() && frameCounter >= myService.getThreshold()) {
 
             Log.d("RemoteAgent", "id: " + frameID);
                 Camera.Parameters parameters = camera.getParameters();
                 Camera.Size size = parameters.getPreviewSize();
                 YuvImage image = new YuvImage(bytes, parameters.getPreviewFormat(),
                         size.width, size.height, null);
+                //Bitmap image = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
                 /*
                 //saving for testing
                 File file = new File(Environment.getExternalStorageDirectory(), "out.jpg");
@@ -126,9 +131,22 @@ import static android.R.attr.data;
                 */
                 ByteArrayOutputStream baos=new ByteArrayOutputStream();
                 image.compressToJpeg(
-                        new Rect(0, 0, image.getWidth(), image.getHeight()), 20,
+                        new Rect(0, 0, image.getWidth(), image.getHeight()), 5,
                         baos);
+                //image.compress(Bitmap.CompressFormat.JPEG,20,baos);
+
                 byte[] b = baos.toByteArray();
+
+
+/*
+
+                Bitmap bitmap = BitmapFactory.decodeByteArray(b, 0, b.length);
+                Bitmap.createScaledBitmap(bitmap, image.getWidth()/2, image.getHeight()/2, false);
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 20, baos);
+
+                 b = baos.toByteArray();
+
+*/
                 Log.d("PreviewFrameSend", "bytes: " + b.length +"width: " + image.getWidth() + "heigth: "+ image.getHeight());
                 myService.detectFaces(frameID, b);
                 frameID++;
