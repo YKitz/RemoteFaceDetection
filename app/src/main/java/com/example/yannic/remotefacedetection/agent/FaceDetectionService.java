@@ -17,4 +17,6 @@ public interface FaceDetectionService {
 
         ITuple2Future<List<Integer>, byte[]> getFrame(int id, byte[] data);
 
+        IFuture<byte[]> recognizeFace(byte[] inputFace);
+
 }

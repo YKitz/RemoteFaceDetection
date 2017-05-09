@@ -1,6 +1,7 @@
 package com.example.yannic.remotefacedetection;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
@@ -8,6 +9,7 @@ import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.hardware.Camera;
 import android.os.Environment;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -33,10 +35,15 @@ import static android.R.attr.data;
 
 
     public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback, Camera.PreviewCallback{
+        private boolean faceDetectionRunning;
         private SurfaceHolder mHolder;
         private Camera mCamera;
         private JadexService.MyServiceInterface myService;
-        private List _faces;
+        private List<Integer> _faces;
+        private Context _context;
+
+        private boolean _faceFound;
+        private boolean detectionLocal;
 
 
 
@@ -45,6 +52,11 @@ import static android.R.attr.data;
             mCamera = camera;
             Log.d("Preview", "Preview created");
             _faces = new ArrayList<Integer>();
+            _context = context;
+
+            _faceFound = false;
+            faceDetectionRunning = false;
+            detectionLocal = false;
 
             // Install a SurfaceHolder.Callback so we get notified when the
             // underlying surface is created and destroyed.
@@ -112,58 +124,162 @@ import static android.R.attr.data;
     public void onPreviewFrame(byte[] bytes, Camera camera) {
 
 
+        Log.d("FaceDetection", ""+ _faceFound + " " + frameCounter + "Threshold; " + myService.getThreshold());
+
+
+        //für lokale gesichtserkennung
+        if (myService != null && myService.agentRunning() && frameCounter >= myService.getThreshold() && detectionLocal && _faceFound) {
+
+            Log.d("FaceDetection", "send id: " + frameID);
+            Camera.Parameters parameters = camera.getParameters();
+            Camera.Size size = parameters.getPreviewSize();
+            YuvImage image = new YuvImage(bytes, parameters.getPreviewFormat(),
+                    size.width, size.height, null);
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            image.compressToJpeg(
+                    new Rect(Math.round(((float) image.getWidth())/2000*(1000+_faces.get(0))),
+                            Math.round(((float)image.getHeight())/2000*(1000+_faces.get(1))),
+                            Math.round(((float)image.getWidth())/2000*(1000+_faces.get(2))),
+                            Math.round(((float)image.getHeight())/2000*(1000+_faces.get(3)))),
+                    50,
+                    baos);
+
+
+            //Log.d("Rect", " " + Math.round(((float) image.getWidth())/2000*(1000+_faces.get(0))) + " " + ((int)((float)image.getHeight())/2000*(1000+_faces.get(1)))+ " " +((float)image.getWidth())/2000*(1000+_faces.get(2))+ " " + ((float)image.getHeight())/2000*(1000+_faces.get(3)));
+            byte[] b = baos.toByteArray();
+
+            Log.d("FaceDetection", "bytes: " + b.length);
 
 
 
+            myService.recognizeFace(b);
+            frameID++;
 
-        if(myService != null && myService.agentRunning() && frameCounter >= myService.getThreshold()) {
+            frameCounter = 0;
+            _faceFound = false;
+        }
+
+        //für remote Gesichtserkennung
+        if (myService != null && myService.agentRunning() && frameCounter >= myService.getThreshold() && !detectionLocal) {
 
             Log.d("RemoteAgent", "id: " + frameID);
-                Camera.Parameters parameters = camera.getParameters();
-                Camera.Size size = parameters.getPreviewSize();
-                YuvImage image = new YuvImage(bytes, parameters.getPreviewFormat(),
-                        size.width, size.height, null);
-                //Bitmap image = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-                /*
-                //saving for testing
-                File file = new File(Environment.getExternalStorageDirectory(), "out.jpg");
-                FileOutputStream filecon = new FileOutputStream(file);
-                */
-                ByteArrayOutputStream baos=new ByteArrayOutputStream();
-                image.compressToJpeg(
-                        new Rect(0, 0, image.getWidth(), image.getHeight()), 5,
-                        baos);
-                //image.compress(Bitmap.CompressFormat.JPEG,20,baos);
+            Camera.Parameters parameters = camera.getParameters();
+            Camera.Size size = parameters.getPreviewSize();
+            YuvImage image = new YuvImage(bytes, parameters.getPreviewFormat(),
+                    size.width, size.height, null);
 
-                byte[] b = baos.toByteArray();
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            image.compressToJpeg(
+                    new Rect(0, 0, image.getWidth(), image.getHeight()), 5,
+                    baos);
 
 
-/*
+            byte[] b = baos.toByteArray();
 
-                Bitmap bitmap = BitmapFactory.decodeByteArray(b, 0, b.length);
-                Bitmap.createScaledBitmap(bitmap, image.getWidth()/2, image.getHeight()/2, false);
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 20, baos);
 
-                 b = baos.toByteArray();
-
-*/
-                Log.d("PreviewFrameSend", "bytes: " + b.length +"width: " + image.getWidth() + "heigth: "+ image.getHeight());
-                myService.detectFaces(frameID, b);
-                frameID++;
+            Log.d("PreviewFrameSend", "bytes: " + b.length + "width: " + image.getWidth() + "heigth: " + image.getHeight());
+            myService.detectFaces(frameID, b);
+            frameID++;
 
             frameCounter = 0;
         }
-  frameCounter++;
-
-
-
+        frameCounter++;
 
     }
+
+
+        public int startFaceDetection() {
+            if (faceDetectionRunning) {
+                return 0;
+            }
+            // check if face detection is supported or not
+            // using Camera.Parameters
+
+
+            MyFaceDetectionListener fDListener = new MyFaceDetectionListener();
+            mCamera.setFaceDetectionListener(fDListener);
+            mCamera.startFaceDetection();
+            faceDetectionRunning = true;
+            return 1;
+        }
+
+        public int stopFaceDetection() {
+            if (faceDetectionRunning) {
+                mCamera.stopFaceDetection();
+                faceDetectionRunning = false;
+                return 1;
+            }
+            return 0;
+        }
+
+
+
+
+
+        public void setDetectionLocationLocal(){
+            detectionLocal = true;
+            startFaceDetection();
+        }
 
 
     public void setFacesList(List<Integer> faces){
         _faces = faces;
     }
 
+    private class MyFaceDetectionListener implements Camera.FaceDetectionListener {
+        List<Integer> faceRects;
+
+        private MyFaceDetectionListener(){
+            super();
+            faceRects = new ArrayList<Integer>();
+            faceRects.add(0);
+        }
+
+
+    @Override
+    public void onFaceDetection(Camera.Face[] faces, Camera camera) {
+
+        Log.d("FaceDetection", "Gesichter gefunden: " + faces.length);
+
+
+
+
+        for (int i=0; i<faces.length; i++) {
+            //nt left = faces[i].rect.left;
+            //int right = faces[i].rect.right;
+            //int top = faces[i].rect.top;
+            //int bottom = faces[i].rect.bottom;
+            faceRects.add(faces[i].rect.left);
+
+            faceRects.add(faces[i].rect.top);
+            faceRects.add(faces[i].rect.right);
+            faceRects.add(faces[i].rect.bottom);
+
+            Intent toIntent = new Intent("faceDetected");
+            toIntent.putIntegerArrayListExtra("Data", (ArrayList<Integer>) faceRects);
+            LocalBroadcastManager.getInstance(_context).sendBroadcast(toIntent);
+
+            Log.d("FaceDetection", "coord: left" + faceRects.get(i) + " top" + faceRects.get(i+1) + " right" + faceRects.get(i+2) + " bottom" +faceRects.get(i+3) );
+
+
+        }
+
+        if(faces.length>0){
+            _faceFound = true;
+
+
+            _faces = faceRects;
+        }
+
+
+
+    }
 }
+}
+
+
+
+
+
 

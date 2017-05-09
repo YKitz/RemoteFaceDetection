@@ -69,21 +69,11 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
         similarFace = new ImageView(this);
         similarFace.setLayoutParams(layoutParams);
-       // similarFace.setX(2200);
-       // similarFace.setY(950);
-
-
-
 
         preview = new CameraPreview(this, cam);
 
-
-
-
         FrameLayout layout = (FrameLayout) findViewById(R.id.camera_preview);
         layout.addView(preview);
-
-
 
         this.serviceIntent = new Intent(this, JadexService.class);
 
@@ -122,6 +112,10 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         return c; // returns null if camera is unavailable
     }
 
+    public void detectionLocal(View v){
+        preview.setDetectionLocationLocal();
+    }
+
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
 
@@ -138,6 +132,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
                 if(action.equals("faceDetected")) {
                     ArrayList<Integer> data = intent.getIntegerArrayListExtra("Data");
+
 
                     layout.removeView(_box);
 
@@ -177,6 +172,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         LocalBroadcastManager.getInstance(this).registerReceiver(jadexServiceReceiver,new IntentFilter("faceDetected"));
         LocalBroadcastManager.getInstance(this).registerReceiver(jadexServiceReceiver,new IntentFilter("faceRecognized"));
     }
+
 
     @Override
     public void onServiceDisconnected(ComponentName name) {

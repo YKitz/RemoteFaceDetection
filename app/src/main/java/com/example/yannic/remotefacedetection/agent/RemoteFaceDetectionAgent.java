@@ -15,6 +15,7 @@ import jadex.bridge.service.RequiredServiceInfo;
 import jadex.bridge.service.annotation.Service;
 import jadex.bridge.service.component.IRequiredServicesFeature;
 import jadex.bridge.service.types.context.IContextService;
+import jadex.commons.future.DefaultResultListener;
 import jadex.commons.future.DefaultTuple2ResultListener;
 import jadex.commons.future.Future;
 import jadex.commons.future.IFuture;
@@ -120,6 +121,31 @@ public class RemoteFaceDetectionAgent implements IAgentInterface{
             return new Tuple2Future<List<Integer>, byte[]>(new ArrayList<Integer>(), new byte[0]);
         }
 
+
+
+    }
+
+
+
+    public IFuture<byte[]> recognizeFace(byte[] input){
+
+
+       IFuture<byte[]> fut = fds.recognizeFace(input);
+        fut.addResultListener(new DefaultResultListener<byte[]>() {
+            @Override
+            public void exceptionOccurred(Exception exception) {
+
+            }
+
+            @Override
+            public void resultAvailable(byte[] b) {
+              Log.d("Remote", "ähnliches Gesicht von Server erhalten Länge: " + b.length);
+            }
+
+
+        });
+
+        return fut;
 
 
     }

@@ -60,6 +60,8 @@ public class JadexService extends JadexPlatformService {
         }
 
         public int getThreshold(){ return JadexService.this.getThreshold(); }
+
+        public void recognizeFace(byte[] input){JadexService.this.recognizeFace(input);}
     }
 
 
@@ -159,6 +161,27 @@ public class JadexService extends JadexPlatformService {
 
     public int getThreshold(){return sendThreshold;}
 
+
+
+    public void recognizeFace(byte[] input){
+
+        IFuture<byte[]> fut = agent.recognizeFace(input);
+        fut.addResultListener(new DefaultResultListener<byte[]>() {
+            @Override
+            public void exceptionOccurred(Exception exception) {
+
+            }
+
+            @Override
+            public void resultAvailable(byte[] b) {
+                Intent toIntent = new Intent("faceRecognized");
+                toIntent.putExtra("img",  b);
+                LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(toIntent);
+            }
+
+
+        });
+    }
 
 
     public void detectFaces(int id, byte[] data) {
