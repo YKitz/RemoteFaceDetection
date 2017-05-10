@@ -165,6 +165,9 @@ public class JadexService extends JadexPlatformService {
 
     public void recognizeFace(byte[] input){
 
+
+
+
         IFuture<byte[]> fut = agent.recognizeFace(input);
         fut.addResultListener(new DefaultResultListener<byte[]>() {
             @Override

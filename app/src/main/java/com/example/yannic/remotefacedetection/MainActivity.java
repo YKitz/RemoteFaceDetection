@@ -48,6 +48,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     public JadexService.MyServiceInterface myService;
     RelativeLayout.LayoutParams layoutParams;
     ImageView similarFace;
+    ImageView serverImage;
     RelativeLayout layout;
     Button localDetectionButton;
     Button startRemoteButton;
@@ -70,9 +71,8 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         remoteDetectionButton = (Button) findViewById(R.id.remoteDetecionButton);
         startRemoteButton = (Button) findViewById(R.id.startRemoteButton);
 
-        //_box = new Box(getApplicationContext(), 2550, 1430, 200, 200);
-        //addContentView(_box, layoutParams);
-        //similarFace = (ImageView) findViewById(R.id.imageView);
+
+
 
         similarFace = new ImageView(this);
         similarFace.setLayoutParams(layoutParams);
@@ -85,6 +85,9 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         this.serviceIntent = new Intent(this, JadexService.class);
 
         startService(serviceIntent);
+
+        //serverImage = (ImageView) findViewById(R.id.imageView);
+       // serverImage.setImageResource(R.drawable.face01);
 
     }
 
@@ -169,6 +172,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                     Bitmap bmp = BitmapFactory.decodeByteArray(imgData, 0, imgData.length);
                     layout.removeView(similarFace);
                     similarFace.setImageBitmap(bmp);
+                   // serverImage.setImageBitmap(bmp);
 
                     layout.addView(similarFace);
                 }

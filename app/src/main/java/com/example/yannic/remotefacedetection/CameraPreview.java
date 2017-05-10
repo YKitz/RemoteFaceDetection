@@ -137,7 +137,7 @@ import static android.R.attr.data;
 
 
 
-            Log.d("FaceDetection", "send id: " + frameID);
+            Log.d("Remote", "send face id: " + frameID);
             Camera.Parameters parameters = camera.getParameters();
             Camera.Size size = parameters.getPreviewSize();
             YuvImage image = new YuvImage(bytes, parameters.getPreviewFormat(),

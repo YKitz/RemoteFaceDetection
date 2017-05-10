@@ -130,6 +130,7 @@ public class RemoteFaceDetectionAgent implements IAgentInterface{
     public IFuture<byte[]> recognizeFace(byte[] input){
 
 
+
        IFuture<byte[]> fut = fds.recognizeFace(input);
         fut.addResultListener(new DefaultResultListener<byte[]>() {
             @Override

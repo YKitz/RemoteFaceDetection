@@ -16,7 +16,7 @@ import java.util.List;
 public class Box extends View {
     private Paint paint = new Paint();
     private boolean _draw;
-    public Canvas _canvas;
+    //public Canvas _canvas;
 
     int[] x;
     int[] y;
