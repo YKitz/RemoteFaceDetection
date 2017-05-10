@@ -25,8 +25,8 @@ public class Box extends View {
 
     Box(Context context){
         super(context);
-
     }
+
     Box(Context context, List<Integer> faces) {
         super(context);
         _draw = false;
@@ -39,6 +39,8 @@ public class Box extends View {
         if(faces.size()>1){
             _draw=true;
         }
+
+
 
 
         int i = 0;
@@ -54,6 +56,7 @@ public class Box extends View {
 
     }
 
+    /*
     public void drawRects(List<Integer> faces) {
         int faceCount = (faces.size() - 1) / 4;
         x = new int[faceCount];
@@ -73,11 +76,12 @@ public class Box extends View {
             }
 
         }
-*/
+
     }
     public void clearCanvas(){
      //   _canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
     }
+    */
 
     @Override
     protected void onDraw(Canvas canvas) { // Override the onDraw() Method

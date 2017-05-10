@@ -5,12 +5,14 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.hardware.Camera;
 import android.os.Environment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+import android.view.Display;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.widget.Toast;
@@ -47,11 +49,14 @@ import static android.R.attr.data;
 
 
 
+
         public CameraPreview(Context context, Camera camera) {
             super(context);
             mCamera = camera;
             Log.d("Preview", "Preview created");
             _faces = new ArrayList<Integer>();
+
+
             _context = context;
 
             _faceFound = false;
@@ -130,21 +135,40 @@ import static android.R.attr.data;
         //für lokale gesichtserkennung
         if (myService != null && myService.agentRunning() && frameCounter >= myService.getThreshold() && detectionLocal && _faceFound) {
 
+
+
             Log.d("FaceDetection", "send id: " + frameID);
             Camera.Parameters parameters = camera.getParameters();
             Camera.Size size = parameters.getPreviewSize();
             YuvImage image = new YuvImage(bytes, parameters.getPreviewFormat(),
                     size.width, size.height, null);
 
+
+            Rect rect = new Rect(Math.round(((float) image.getWidth())/2000*(1000+_faces.get(1))),
+                    Math.round(((float)image.getHeight())/2000*(1000+_faces.get(2))),
+                    Math.round(((float)image.getWidth())/2000*(1000+_faces.get(3))),
+                    Math.round(((float)image.getHeight())/2000*(1000+_faces.get(4))));
+
+            //Rect rect = new Rect(_faces.get(1), _faces.get(2), _faces.get(3), _faces.get(4));
+
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             image.compressToJpeg(
-                    new Rect(Math.round(((float) image.getWidth())/2000*(1000+_faces.get(0))),
-                            Math.round(((float)image.getHeight())/2000*(1000+_faces.get(1))),
-                            Math.round(((float)image.getWidth())/2000*(1000+_faces.get(2))),
-                            Math.round(((float)image.getHeight())/2000*(1000+_faces.get(3)))),
+                    rect,
                     50,
                     baos);
 
+
+            /*
+
+            List face = new ArrayList<Integer>();
+            face.add(0);            //da die anderen verarbeiteten Listen an erser stelle eine id haben
+            face.add(rect.left);
+            face.add(rect.top);
+            face.add(rect.right);
+            face.add(rect.bottom);
+
+
+            */
 
             //Log.d("Rect", " " + Math.round(((float) image.getWidth())/2000*(1000+_faces.get(0))) + " " + ((int)((float)image.getHeight())/2000*(1000+_faces.get(1)))+ " " +((float)image.getWidth())/2000*(1000+_faces.get(2))+ " " + ((float)image.getHeight())/2000*(1000+_faces.get(3)));
             byte[] b = baos.toByteArray();
@@ -222,27 +246,32 @@ import static android.R.attr.data;
             startFaceDetection();
         }
 
+         public void setDetectionRemote() {
+             detectionLocal = false;
+             stopFaceDetection();
+         }
+
+
 
     public void setFacesList(List<Integer> faces){
         _faces = faces;
     }
 
-    private class MyFaceDetectionListener implements Camera.FaceDetectionListener {
-        List<Integer> faceRects;
 
-        private MyFaceDetectionListener(){
-            super();
-            faceRects = new ArrayList<Integer>();
-            faceRects.add(0);
-        }
+    private class MyFaceDetectionListener implements Camera.FaceDetectionListener {
+
 
 
     @Override
     public void onFaceDetection(Camera.Face[] faces, Camera camera) {
 
-        Log.d("FaceDetection", "Gesichter gefunden: " + faces.length);
+        //Log.d("FaceDetection", "Gesichter gefunden: " + faces.length);
+        List<Integer> faceRects;
 
-
+        faceRects = new ArrayList<Integer>();
+        faceRects.add(0);//statt der üblichen id
+        List face = new ArrayList<Integer>();
+        face.add(0);//statt der üblichen id
 
 
         for (int i=0; i<faces.length; i++) {
@@ -251,16 +280,26 @@ import static android.R.attr.data;
             //int top = faces[i].rect.top;
             //int bottom = faces[i].rect.bottom;
             faceRects.add(faces[i].rect.left);
-
             faceRects.add(faces[i].rect.top);
             faceRects.add(faces[i].rect.right);
             faceRects.add(faces[i].rect.bottom);
 
+
+
+
+            face.add(Math.round(((float) 1920)/2000*(1000+faces[i].rect.left))); // x-coord
+            face.add(Math.round(((float) 1080)/2000*(1000+faces[i].rect.top))); // y-coord
+            face.add(Math.round(((float) 1920)/2000*(1000+faces[i].rect.right))-Math.round(((float) 1920)/2000*(1000+faces[i].rect.left))); // width
+            face.add(Math.round(((float) 1080)/2000*(1000+faces[i].rect.bottom))-Math.round(((float) 1080)/2000*(1000+faces[i].rect.top)));  // height
+
+
             Intent toIntent = new Intent("faceDetected");
-            toIntent.putIntegerArrayListExtra("Data", (ArrayList<Integer>) faceRects);
+            toIntent.putIntegerArrayListExtra("Data", (ArrayList<Integer>) face);
             LocalBroadcastManager.getInstance(_context).sendBroadcast(toIntent);
 
-            Log.d("FaceDetection", "coord: left" + faceRects.get(i) + " top" + faceRects.get(i+1) + " right" + faceRects.get(i+2) + " bottom" +faceRects.get(i+3) );
+
+
+           // Log.d("FaceDetection", "coord: left" + faceRects.get(i) + " top" + faceRects.get(i+1) + " right" + faceRects.get(i+2) + " bottom" +faceRects.get(i+3) );
 
 
         }
@@ -269,7 +308,10 @@ import static android.R.attr.data;
             _faceFound = true;
 
 
+
             _faces = faceRects;
+            Log.d("_faces","size" + _faces.size());
+
         }
 
 

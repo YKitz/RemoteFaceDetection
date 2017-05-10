@@ -26,6 +26,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -48,6 +49,9 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     RelativeLayout.LayoutParams layoutParams;
     ImageView similarFace;
     RelativeLayout layout;
+    Button localDetectionButton;
+    Button startRemoteButton;
+    Button remoteDetectionButton;
 
 
 
@@ -62,6 +66,9 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         layoutParams = new RelativeLayout.LayoutParams(300,300);
         layoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
         layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        localDetectionButton = (Button) findViewById(R.id.localDetectionButton);
+        remoteDetectionButton = (Button) findViewById(R.id.remoteDetecionButton);
+        startRemoteButton = (Button) findViewById(R.id.startRemoteButton);
 
         //_box = new Box(getApplicationContext(), 2550, 1430, 200, 200);
         //addContentView(_box, layoutParams);
@@ -97,6 +104,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
 
     public void startFaceDetection(View v){
+        startRemoteButton.setEnabled(false);
         myService.startFaceDetection();
     }
 
@@ -114,7 +122,18 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
     public void detectionLocal(View v){
         preview.setDetectionLocationLocal();
+        localDetectionButton.setEnabled(false);
+        remoteDetectionButton.setEnabled(true);
     }
+
+
+    public void detectionRemote(View v){
+        preview.setDetectionRemote();
+        localDetectionButton.setEnabled(true);
+        remoteDetectionButton.setEnabled(false);
+    }
+
+
 
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
@@ -131,6 +150,8 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                 String action = intent.getAction();
 
                 if(action.equals("faceDetected")) {
+
+                    Log.d("MainActivity", "faceDetected");
                     ArrayList<Integer> data = intent.getIntegerArrayListExtra("Data");
 
 
