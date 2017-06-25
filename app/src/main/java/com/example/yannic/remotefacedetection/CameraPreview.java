@@ -123,7 +123,10 @@ import static android.R.attr.data;
 
 
         int frameCounter= 0;
-        int frameID = 0;
+
+        int frameID = 0;//muss für lange anwendung noch zurück gesetzt werden
+
+        int faceID = 0;
 
     @Override
     public void onPreviewFrame(byte[] bytes, Camera camera) {
@@ -136,7 +139,6 @@ import static android.R.attr.data;
         if (myService != null && myService.agentRunning() && frameCounter >= myService.getThreshold() && detectionLocal && _faceFound) {
 
 
-
             Log.d("Remote", "send face id: " + frameID);
             Camera.Parameters parameters = camera.getParameters();
             Camera.Size size = parameters.getPreviewSize();
@@ -144,10 +146,16 @@ import static android.R.attr.data;
                     size.width, size.height, null);
 
 
-            Rect rect = new Rect(Math.round(((float) image.getWidth())/2000*(1000+_faces.get(1))),
-                    Math.round(((float)image.getHeight())/2000*(1000+_faces.get(2))),
-                    Math.round(((float)image.getWidth())/2000*(1000+_faces.get(3))),
-                    Math.round(((float)image.getHeight())/2000*(1000+_faces.get(4))));
+
+            for (int i = 1; i < _faces.size(); i += 4) {
+
+
+
+            Rect rect = new Rect(Math.round(((float) image.getWidth()) / 2000 * (1000 + _faces.get(1))),
+                    Math.round(((float) image.getHeight()) / 2000 * (1000 + _faces.get(2))),
+                    Math.round(((float) image.getWidth()) / 2000 * (1000 + _faces.get(3))),
+                    Math.round(((float) image.getHeight()) / 2000 * (1000 + _faces.get(4))));
+
 
             //Rect rect = new Rect(_faces.get(1), _faces.get(2), _faces.get(3), _faces.get(4));
 
@@ -158,27 +166,18 @@ import static android.R.attr.data;
                     baos);
 
 
-            /*
-
-            List face = new ArrayList<Integer>();
-            face.add(0);            //da die anderen verarbeiteten Listen an erser stelle eine id haben
-            face.add(rect.left);
-            face.add(rect.top);
-            face.add(rect.right);
-            face.add(rect.bottom);
-
-
-            */
-
-            //Log.d("Rect", " " + Math.round(((float) image.getWidth())/2000*(1000+_faces.get(0))) + " " + ((int)((float)image.getHeight())/2000*(1000+_faces.get(1)))+ " " +((float)image.getWidth())/2000*(1000+_faces.get(2))+ " " + ((float)image.getHeight())/2000*(1000+_faces.get(3)));
             byte[] b = baos.toByteArray();
+
 
             Log.d("FaceDetection", "bytes: " + b.length);
 
-
-
-            myService.recognizeFace(b);
+            Log.d("TEST", "Send " + frameID + "größe: " + b.length);
+            myService.recognizeFace(frameID, b);
             frameID++;
+
+        }
+
+
 
             frameCounter = 0;
             _faceFound = false;
@@ -201,8 +200,8 @@ import static android.R.attr.data;
 
             byte[] b = baos.toByteArray();
 
+            Log.d("TEST", "Send " + frameID);
 
-            Log.d("PreviewFrameSend", "bytes: " + b.length + "width: " + image.getWidth() + "heigth: " + image.getHeight());
             myService.detectFaces(frameID, b);
             frameID++;
 

@@ -61,7 +61,8 @@ public class JadexService extends JadexPlatformService {
 
         public int getThreshold(){ return JadexService.this.getThreshold(); }
 
-        public void recognizeFace(byte[] input){JadexService.this.recognizeFace(input);}
+        public void recognizeFace(int id, byte[] input){JadexService.this.recognizeFace(id, input);}
+
     }
 
 
@@ -163,23 +164,43 @@ public class JadexService extends JadexPlatformService {
 
 
 
-    public void recognizeFace(byte[] input){
+    public void recognizeFace(int id, byte[] input){
 
 
 
+        //problem bei vielen faces
+        //passe sende häufigkeit an
+        if(ids.size() > 0){
+            sendThreshold += ids.size()*3;
+            Log.d("Remote", "Threshold: " + sendThreshold);
+        }
+        else{
+            sendThreshold = sendThreshold/2;
+            Log.d("Remote", "Threshold: " + sendThreshold);
+        }
 
-        IFuture<byte[]> fut = agent.recognizeFace(input);
-        fut.addResultListener(new DefaultResultListener<byte[]>() {
+        ids.add(id);
+
+
+        ITuple2Future<byte[], Integer> fut = agent.recognizeFace(id, input);
+        fut.addResultListener(new DefaultTuple2ResultListener<byte[], Integer>() {
             @Override
             public void exceptionOccurred(Exception exception) {
 
             }
 
             @Override
-            public void resultAvailable(byte[] b) {
+            public void firstResultAvailable(byte[] b) {
                 Intent toIntent = new Intent("faceRecognized");
                 toIntent.putExtra("img",  b);
                 LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(toIntent);
+            }
+
+            @Override
+            public void secondResultAvailable(Integer id){
+                if (ids.contains(id)){
+                    ids.remove(id);
+                }
             }
 
 
@@ -189,6 +210,8 @@ public class JadexService extends JadexPlatformService {
 
     public void detectFaces(int id, byte[] data) {
 
+
+        //passe sende häufigkeit an
         if(ids.size() > 0){
             sendThreshold += ids.size()*10;
             Log.d("Remote", "Threshold: " + sendThreshold);

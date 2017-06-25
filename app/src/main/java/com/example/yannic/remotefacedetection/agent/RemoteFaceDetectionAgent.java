@@ -105,12 +105,12 @@ public class RemoteFaceDetectionAgent implements IAgentInterface{
 
                 @Override
                 public void firstResultAvailable(List<Integer> result) {
-                    Log.d("RemoteAgent", "Result1 ist da: " + result.toString());
+                    Log.d("TEST", "Result1 ist da: " + result.toString());
                 }
 
                 @Override
                 public void secondResultAvailable(byte[] result) {
-                    Log.d("RemoteAgent", "Result2 ist da: " + result.length);
+                    Log.d("TEST", "ähnliches Gesicht von Server erhalten" + result.length);
 
                 }
             });
@@ -127,20 +127,25 @@ public class RemoteFaceDetectionAgent implements IAgentInterface{
 
 
 
-    public IFuture<byte[]> recognizeFace(byte[] input){
+    public ITuple2Future<byte[], Integer> recognizeFace(int id, byte[] input){
 
 
 
-       IFuture<byte[]> fut = fds.recognizeFace(input);
-        fut.addResultListener(new DefaultResultListener<byte[]>() {
+       ITuple2Future<byte[], Integer> fut = fds.recognizeFace(id, input);
+        fut.addResultListener(new DefaultTuple2ResultListener<byte[], Integer>() {
             @Override
             public void exceptionOccurred(Exception exception) {
 
             }
 
             @Override
-            public void resultAvailable(byte[] b) {
+            public void firstResultAvailable(byte[] b) {
               Log.d("Remote", "ähnliches Gesicht von Server erhalten Länge: " + b.length);
+            }
+
+            @Override
+            public void secondResultAvailable(Integer id) {
+                Log.d("TEST", "ähnliches Gesicht von Server erhalten ID: " + id);
             }
 
 

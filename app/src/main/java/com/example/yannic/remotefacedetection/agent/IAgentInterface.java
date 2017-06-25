@@ -14,6 +14,6 @@ public interface IAgentInterface {
 
     ITuple2Future<List<Integer>, byte[]> getFaceArray(int id, byte[] data);
 
-    IFuture<byte[]> recognizeFace(byte[] input);
+    ITuple2Future<byte[], Integer> recognizeFace(int id, byte[] input);
 
 }
