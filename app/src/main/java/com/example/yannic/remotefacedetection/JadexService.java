@@ -213,7 +213,7 @@ public class JadexService extends JadexPlatformService {
 
         //passe sende häufigkeit an
         if(ids.size() > 0){
-            sendThreshold += ids.size()*10;
+            sendThreshold += ids.size()*5;
             Log.d("Remote", "Threshold: " + sendThreshold);
         }
         else{

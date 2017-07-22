@@ -140,12 +140,12 @@ public class RemoteFaceDetectionAgent implements IAgentInterface{
 
             @Override
             public void firstResultAvailable(byte[] b) {
-              Log.d("Remote", "ähnliches Gesicht von Server erhalten Länge: " + b.length);
+              Log.d("TEST", "ähnliches Gesicht von Server erhalten Länge: " + b.length);
             }
 
             @Override
             public void secondResultAvailable(Integer id) {
-                Log.d("TEST", "ähnliches Gesicht von Server erhalten ID: " + id);
+                Log.d("TEST", "ähnliches Gesicht von Server erhalten ID: " + id );
             }
 
 

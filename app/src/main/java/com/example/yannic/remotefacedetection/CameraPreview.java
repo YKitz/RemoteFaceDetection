@@ -151,10 +151,10 @@ import static android.R.attr.data;
 
 
 
-            Rect rect = new Rect(Math.round(((float) image.getWidth()) / 2000 * (1000 + _faces.get(1))),
-                    Math.round(((float) image.getHeight()) / 2000 * (1000 + _faces.get(2))),
-                    Math.round(((float) image.getWidth()) / 2000 * (1000 + _faces.get(3))),
-                    Math.round(((float) image.getHeight()) / 2000 * (1000 + _faces.get(4))));
+            Rect rect = new Rect(Math.round(((float) image.getWidth()) / 2000 * (1000 + _faces.get(i))),
+                    Math.round(((float) image.getHeight()) / 2000 * (1000 + _faces.get(i+1))),
+                    Math.round(((float) image.getWidth()) / 2000 * (1000 + _faces.get(i+2))),
+                    Math.round(((float) image.getHeight()) / 2000 * (1000 + _faces.get(i+3))));
 
 
             //Rect rect = new Rect(_faces.get(1), _faces.get(2), _faces.get(3), _faces.get(4));
