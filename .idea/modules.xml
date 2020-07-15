@@ -3,6 +3,8 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/RemoteFaceDetection.iml" filepath="$PROJECT_DIR$/RemoteFaceDetection.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/RemoteFaceDetection-app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/RemoteFaceDetection-app.iml" group="RemoteFaceDetection/app" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/StudioProjects-RemoteFaceDetection.iml" filepath="$PROJECT_DIR$/.idea/modules/StudioProjects-RemoteFaceDetection.iml" group="RemoteFaceDetection" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>
